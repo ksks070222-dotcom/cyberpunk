@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>네오 디스트로이어: 차원 격리자 (궁극기 각성 빌드)</title>
+    <title>네오 디스트로이어: 버서커 퀸에러 & 시공간 왜곡 패치</title>
     <style>
         body { margin: 0; background-color: #050508; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         #game-container { position: relative; width: 800px; height: 600px; border: 4px solid #00ffcc; background: #0c0c14; box-shadow: 0 0 30px rgba(0, 255, 204, 0.2); overflow: hidden; }
@@ -11,30 +11,18 @@
         h1 { color: #00ffcc; font-size: 38px; margin-bottom: 10px; text-shadow: 0 0 15px rgba(0,255,204,0.6); font-style: italic; }
         h2 { color: #888e9b; font-size: 16px; margin-bottom: 40px; letter-spacing: 2px; }
         .card-container { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; width: 100%; }
-        
         .card { background: #131322; border: 2px solid #222538; border-radius: 12px; padding: 15px; width: 155px; cursor: pointer; transition: all 0.3s; box-sizing: border-box; }
         .card:hover, .card.selected { border-color: #00ffcc; transform: translateY(-8px); box-shadow: 0 8px 20px rgba(0,255,204,0.3); }
         .card .icon { font-size: 35px; margin-bottom: 10px; }
         .card .title { font-weight: bold; font-size: 15px; margin-bottom: 8px; color: #fff; }
         .card .desc { font-size: 11px; color: #888e9b; line-height: 1.4; text-align: left; }
-        
         .btn { background: #00ffcc; color: #050508; border: none; padding: 14px 35px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-        .btn:hover { background: #fff; box-shadow: 0 0 15px #fff; }
-        
-        .reward-card { width: 200px; height: 135px; display: flex; flex-direction: column; justify-content: center; background: #1a1a2e; border: 2px solid #ff007f; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
+        .reward-card { width: 200px; height: 145px; display: flex; flex-direction: column; justify-content: center; background: #1a1a2e; border: 2px solid #ff007f; padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
         .reward-card:hover, .reward-card.selected { border-color: #fff; background: #252542; box-shadow: 0 8px 20px rgba(255,0,127,0.3); transform: translateY(-5px); }
-
-        .boss-card { border-color: #ff0055; background: #220511; }
-        .boss-card:hover, .boss-card.selected { border-color: #ff8800; background: #3b0a1d; box-shadow: 0 8px 20px rgba(255,0,85,0.4); }
-        .ultimate-card { border-color: #ff007f; background: #2b001a; width: 320px; height: 160px; box-shadow: 0 0 25px rgba(255,0,127,0.5); }
-        .ultimate-card:hover, .ultimate-card.selected { border-color: #ff00ff; background: #4a002f; box-shadow: 0 0 40px rgba(255,0,255,0.7); }
-
-        #ui { position: absolute; top: 15px; left: 15px; font-size: 15px; font-family: 'Courier New', monospace; z-index: 5; pointer-events: none; color: #00ffcc; line-height: 1.6; text-shadow: 1px 1px 2px #000; }
-        
+        #ui { position: absolute; top: 15px; left: 15px; font-size: 14px; font-family: 'Courier New', monospace; z-index: 5; pointer-events: none; color: #00ffcc; line-height: 1.5; text-shadow: 1px 1px 2px #000; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; }
         #boss-ui { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 350px; text-align: center; z-index: 5; pointer-events: none; }
         .boss-bar-bg { width: 100%; height: 12px; background: #222; border: 1px solid #ff0055; border-radius: 4px; overflow: hidden; margin-top: 5px; }
         .boss-bar-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff0055, #ff5500); transition: width 0.1s; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
@@ -43,78 +31,59 @@
 <div id="game-container">
     <div id="ui" class="hidden">
         [CLASS] <span id="ui-class">-</span><br>
-        [LEVEL] <span id="ui-lvl">1</span> (<span id="ui-exp">0</span> / <span id="ui-next-exp">100</span>)<br>
+        [LEVEL] <span id="ui-lvl">1</span> (<span id="ui-exp">0</span>/<span id="ui-next-exp">100</span>)<br>
         [HP] <span id="ui-hp">100</span> / <span id="ui-max-hp">100</span> <br>
-        <span style="color: #ff8800;">[SPACE 대쉬]</span> <span id="ui-cd-dash">미보유</span><br>
-        <span id="ui-class-skill-name" style="color: #777;">[SHIFT 특수기]</span> <span id="ui-cd-class">미보유</span><br>
-        <span style="color: #ff007f; font-weight: bold;">[R 궁극기]</span> <span id="ui-cd-ult" style="color: #555;">미해금 (Lv.10 각성)</span><br>
-        <span style="color: #ff0055;">[BOSS 스킬]</span> <span id="ui-boss-skills" style="color: #ccc;">없음</span><br>
-        [다음 보스까지] <span id="ui-boss-timer">60</span>초
+        <span style="color: #ff8800;">[SPACE DASH]</span> <span id="ui-cd-dash">LOCKED</span><br>
+        <span id="ui-class-skill-name" style="color: #00ffcc;">[SHIFT SKILL]</span> <span id="ui-cd-class">LOCKED</span><br>
+        <span style="color: #ff007f; font-weight: bold;">[R ULTIMATE]</span> <span id="ui-cd-ult">Lv.10 LOCK</span><br>
+        <span id="ui-boss-timer" style="color: #fff;">NEXT BOSS: 45s</span>
     </div>
 
     <div id="boss-ui" class="hidden">
-        <span id="boss-ui-name" style="color: #ff0055; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 8px #ff0055;">⚠️ 차원 붕괴 요인 출현 ⚠️</span>
-        <div class="boss-bar-bg">
-            <div id="boss-hp-fill" class="boss-bar-fill"></div>
-        </div>
+        <span id="boss-ui-name" style="color: #ff0055; font-weight: bold;">⚠️ BOSS DETECTED ⚠️</span>
+        <div class="boss-bar-bg"><div id="boss-hp-fill" class="boss-bar-fill"></div></div>
     </div>
 
     <div id="screen-start" class="screen">
-        <div style="position: absolute; top: 20px; right: 20px; text-align: left; font-size: 11px; color: #888e9b; background: rgba(19, 19, 34, 0.85); padding: 10px 14px; border-radius: 8px; border: 1px solid #00ffcc; line-height: 1.5; box-shadow: 0 0 15px rgba(0,255,204,0.15); pointer-events: none;">
-            <span style="color: #00ffcc; font-weight: bold;">📢 시스템 가동 기록</span><br>
-            • 캐릭터별 고유 HP 차별화 완료<br>
-            • 10레벨 도달 시 궁극기[R] 확정 각성<br>
-            • 차원 정지 및 멜트다운 렌더러 최적화
-        </div>
-
-        <h1>NEO-DESTROYER <span style="font-size: 12px; color: #ff007f; border: 1px solid #ff007f; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 10px; font-style: normal; text-shadow: none; font-weight: bold;">v1.2 ULTIMATE</span></h1>
-        <h2>차원의 균열을 파괴하고 봉인하라</h2>
-        
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">[A] [D] 키로 이동 후 [ENTER]로 선택</p>
+        <h1>NEO-DESTROYER <span style="font-size: 12px; color: #ff007f; border: 1px solid #ff007f; padding: 2px 6px; border-radius: 4px;">v1.9</span></h1>
+        <h2>버서커 퀸에러의 각성과 시공의 바늘</h2>
+        <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">[A] [D] 이동 후 [ENTER] 선택</p>
         <div class="card-container">
             <div class="card selected" onclick="selectClass('glitch')">
-                <div class="icon">⚡</div>
-                <div class="title">글리치 워커</div>
-                <div class="desc">가장 가까운 적에게 전자기 스파이크 발사<br><span style="color:#ffff00;">(단일 극딜 / 크리티컬)</span><br><span style="color:#ff3333; font-weight:bold;">[HP: 80] 유리대포</span></div>
+                <div class="icon">⚡</div><div class="title">글리치 워커</div>
+                <div class="desc">자동 고속 단일 격침<br><span style="color:#ff3333;">[HP: 80] 속도 조절판</span></div>
             </div>
             <div class="card" onclick="selectClass('void')">
-                <div class="icon">🔮</div>
-                <div class="title">보이드 마스터</div>
-                <div class="desc">주변에 상시 지속 장막을 유지하여 접근하는 적 소멸<br><span style="color:#ff007f;">(안정적인 도트 범위)</span><br><span style="color:#33ff33; font-weight:bold;">[HP: 120] 근접특화</span></div>
+                <div class="icon">🔮</div><div class="title">보이드 마스터</div>
+                <div class="desc">도트 대미지 특화<br><span style="color:#33ff33;">[HP: 120] 광역제어</span></div>
             </div>
             <div class="card" onclick="selectClass('chrono')">
-                <div class="icon">⏳</div>
-                <div class="title">크로노 브레이커</div>
-                <div class="desc">시간 단검을 부채꼴 3갈래 방향으로 동시에 투척<br><span style="color:#00e6ff;">(광역 견제 및 유틸)</span><br><span style="color:#00e6ff; font-weight:bold;">[HP: 100] 밸런스</span></div>
+                <div class="icon">⏳</div><div class="title">크로노 브레이커</div>
+                <div class="desc">부채꼴 시공간 탄환<br><span style="color:#00e6ff;">[HP: 100] 3방향 확산공격</span></div>
             </div>
             <div class="card" onclick="selectClass('miner')">
-                <div class="icon">💥</div>
-                <div class="title">오버로드 블래스터</div>
-                <div class="desc">착탄 시 폭발을 일으키는 무거운 중화기 에너지탄 발사<br><span style="color:#ff5500;">(스플래시 대미지)</span><br><span style="color:#ffcc00; font-weight:bold;">[HP: 140] 중장갑탱커</span></div>
+                <div class="icon">💥</div><div class="title">오버로드 블래스터</div>
+                <div class="desc">스플래시 강력 화력<br><span style="color:#ffcc00;">[HP: 140] 중장갑</span></div>
             </div>
         </div>
     </div>
 
     <div id="screen-levelup" class="screen hidden">
-        <h1 id="levelup-title" style="color: #ff007f; text-shadow: 0 0 15px rgba(255,0,127,0.6);">▲ LEVEL UP ▲</h1>
-        <p id="levelup-desc" style="color: #eee; margin-bottom: 10px;">차원의 힘이 증폭되었습니다. 보상을 선택하세요.</p>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 30px;">[A] [D] 키로 이동 후 [ENTER]로 선택</p>
+        <h1 id="levelup-title">▲ LEVEL UP ▲</h1>
+        <p id="levelup-desc">증폭할 차원의 힘을 선택하세요.</p>
         <div class="card-container" id="levelup-cards"></div>
     </div>
 
     <div id="screen-boss-reward" class="screen hidden">
-        <h1 style="color: #ff0055; text-shadow: 0 0 20px rgba(255,0,85,0.8);">★ CORE EXTRACTED ★</h1>
-        <p style="color: #eee; margin-bottom: 10px;">보스의 코어를 흡수했습니다. 강력한 특수 능력을 선택하세요.</p>
-        <p style="color: #ccc; font-size: 14px; margin-bottom: 30px;">[A] [D] 키로 이동 후 [ENTER]로 선택</p>
+        <h1 style="color: #ff0055;">★ CORE EXTRACTED ★</h1>
+        <p>보스의 코어를 흡수하여 유물을 획득했습니다.</p>
         <div class="card-container" id="boss-reward-cards"></div>
     </div>
 
     <div id="screen-gameover" class="screen hidden">
-        <h1 style="color: #ff3333;">연결 끊김 (SYSTEM CRASH)</h1>
-        <p>차원의 에러 요인들에게 잠식되었습니다.</p>
-        <p style="font-size: 20px;">도달 레벨: <span id="final-lvl">0</span></p>
-        <p style="color: #ccc; font-size: 14px; margin-top: 20px;">[ENTER] 키를 누르면 재시작합니다.</p>
-        <button class="btn" onclick="location.reload()">시스템 재부팅</button>
+        <h1 style="color: #ff3333;">SYSTEM CRASH</h1>
+        <p>도달 레벨: <span id="final-lvl">0</span></p>
+        <button class="btn" onclick="location.reload()">REBOOT SYSTEM</button>
     </div>
 
     <canvas id="gameCanvas" width="800" height="600"></canvas>
@@ -124,124 +93,54 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    let gameState = 'start'; 
-    let myClass = '';
-    let level = 1;
-    let currentExp = 0;
-    let nextLevelExp = 100; 
-    let attackTimer = 0;
-    let uiFrameCounter = 0; 
-    
+    let gameState = 'start', myClass = '', level = 1, currentExp = 0, nextLevelExp = 100;
+    let attackTimer = 0, uiFrameCounter = 0, spawnTimer = 0;
+    let shakeTimer = 0, shakeIntensity = 0;
     let menuSelectionIndex = 0;
 
-    const WORLD_WIDTH = 3000;
-    const WORLD_HEIGHT = 3000;
-
+    const WORLD_WIDTH = 2500, WORLD_HEIGHT = 2500;
     const player = { 
-        x: 1500, y: 1500, radius: 14, speed: 2.5, hp: 100, maxHp: 100, bonusAtk: 0,
-        atkSpdBonus: 1.0, rangeBonus: 1.0, regenAmount: 0,        
-        damageCooldown: 0, cooldownDuration: 60,
-        
-        hasDash: false, dashCooldown: 0, maxDashCooldown: 180, dashDuration: 0, dashVx: 0, dashVy: 0,
-        hasShotgun: false, shotgunCooldown: 0, maxShotgunCooldown: 300, shotgunBonusDmg: 0,
-        hasBlackhole: false, blackholeCooldown: 0, maxBlackholeCooldown: 420, blackholeRadiusBonus: 0,
-        hasTimestop: false, timestopCooldown: 0, maxTimestopCooldown: 450,
-        hasNuke: false, nukeCooldown: 0, maxNukeCooldown: 500,
-
-        // 궁극기 시스템 스펙 데이터
-        hasUltimate: false, ultCooldown: 0, maxUltCooldown: 0, ultDuration: 0, cdrBonus: 1.0, ultShield: 0,
-
-        bossDrones: 0, droneAngle: 0,
-        hasBossShield: false, shieldCooldown: 0,
-        hasBossNova: false, novaTimer: 0
+        x: 1250, y: 1250, radius: 14, speed: 3.0, hp: 100, maxHp: 100, bonusAtk: 0,
+        atkSpd: 25, damageCooldown: 0, regenAmount: 0,
+        hasDash: false, dashCooldown: 0, maxDashCooldown: 120, dashDuration: 0, dashVx: 0, dashVy: 0,
+        hasShotgun: false, shotgunCooldown: 0, maxShotgunCooldown: 240,
+        hasBlackhole: false, blackholeCooldown: 0, maxBlackholeCooldown: 360,
+        hasTimestop: false, timestopCooldown: 0, maxTimestopCooldown: 360,
+        hasNuke: false, nukeCooldown: 0, maxNukeCooldown: 400,
+        hasUltimate: false, ultCooldown: 0, maxUltCooldown: 1800, ultDuration: 0, ultShield: 0,
+        bossDrones: 0, droneAngle: 0, hasBossShield: false, shieldCooldown: 0, hasBossNova: false, novaTimer: 0
     };
 
     const camera = { x: 0, y: 0 };
     const keys = {};
-    let enemies = [];
-    let projectiles = [];
-    let particles = [];
-    let activeBlackholes = []; 
-    let bossSkillNames = []; 
-    let shockwaves = []; 
-    
-    let bossActive = false;
-    let bossObj = null;
-    let bossTimerFrames = 60 * 60;
-    let bossCount = 0; 
-    let enemyProjectiles = []; 
-
-    const upgradePool = [
-        { id: 'atk', title: '[공격력 강화]', desc: '공격 대미지가 추가로 증가합니다.', color: '#ff4444' },
-        { id: 'atkSpd', title: '[공격 속도]', desc: '무기 발사 주기가 20% 더 빨라집니다.', color: '#ffff00' },
-        { id: 'maxHp', title: '[체력 증폭]', desc: '최대 체력이 25 증가하고 즉시 회복됩니다.', color: '#00ccff' },
-        { id: 'regen', title: '[나노 수리]', desc: '초당 체력을 지속적으로 미세하게 회복합니다.', color: '#33ff33' },
-        { id: 'range', title: '[영역 확장]', desc: '투사체 크기 및 공격 범위가 증가합니다.', color: '#ff00ff' },
-        { id: 'cdr', title: '[프로세서 가속]', desc: '모든 액티브 및 궁극기의 쿨타임이 15% 감소합니다.', color: '#00ffcc' },
-        { id: 'skill_dash', title: '[액티브: 대쉬]', desc: 'Space키로 짧은 거리를 무적 상태로 돌진합니다.', color: '#ff8800' },
-        { id: 'skill_shotgun', title: '[전용기: 샷건]', desc: 'Shift키로 가장 가까운 적에게 산탄을 발사합니다.', color: '#ff5500', classReq: 'glitch' },
-        { id: 'skill_blackhole', title: '[전용기: 블랙홀]', desc: 'Shift키로 적을 강력하게 중심부로 끌어당기는 구체를 소환합니다.', color: '#9900ff', classReq: 'void' },
-        { id: 'skill_timestop', title: '[전용기: 시간 왜곡]', desc: 'Shift키로 적들을 거의 완전 정지시키고 지속 피해를 주는 구역을 생성합니다.', color: '#00e6ff', classReq: 'chrono' },
-        { id: 'skill_nuke', title: '[전용기: 융합 핵폭탄]', desc: 'Shift키로 플레이어 전방위에 치명적인 에너지 폭발 링을 넓게 방출합니다.', color: '#ff3300', classReq: 'miner' }
-    ];
-
-    const bossUpgradePool = [
-        { id: 'boss_drone', title: '[코어: 전투 드론]', desc: '주위를 회전하며 적에게 지속 피해를 주는 드론을 생성합니다.', color: '#ff0055' },
-        { id: 'boss_shield', title: '[코어: 차원 방어막]', desc: '피격 피해를 1회 무효화하는 방어막을 얻습니다. (쿨타임 20초)', color: '#00ccff' },
-        { id: 'boss_nova', title: '[코어: 붕괴 노바]', desc: '매 10초마다 플레이어 넓은 주변에 광역 폭발을 일으킵니다.', color: '#ff8800' }
-    ];
-
-    let currentUpgrades = []; 
+    let enemies = [], projectiles = [], enemyProjectiles = [], particles = [], activeBlackholes = [], shockwaves = [];
+    let bossActive = false, bossObj = null, bossTimerFrames = 60 * 45, bossCount = 0;
+    let currentUpgrades = [];
 
     window.addEventListener('keydown', e => {
-        let key = e.key.toLowerCase();
-        keys[key] = true;
-
-        if (gameState === 'start' || gameState === 'levelup' || gameState === 'bossReward') {
+        let key = e.key.toLowerCase(); keys[key] = true;
+        if (['start', 'levelup', 'bossReward'].includes(gameState)) {
             let maxIndex = (gameState === 'start') ? 3 : (currentUpgrades.length - 1);
-            if (key === 'a' || key === 'arrowleft') {
-                menuSelectionIndex = Math.max(0, menuSelectionIndex - 1);
-                updateMenuUI();
-            } else if (key === 'd' || key === 'arrowright') {
-                menuSelectionIndex = Math.min(maxIndex, menuSelectionIndex + 1);
-                updateMenuUI();
-            } else if (key === 'enter') {
-                if (gameState === 'start') {
-                    let classes = ['glitch', 'void', 'chrono', 'miner'];
-                    selectClass(classes[menuSelectionIndex]);
-                } else if (gameState === 'levelup') {
-                    chooseUpgrade(currentUpgrades[menuSelectionIndex].id);
-                } else if (gameState === 'bossReward') {
-                    chooseBossUpgrade(currentUpgrades[menuSelectionIndex].id);
-                }
+            if (key === 'a' || key === 'arrowleft') { menuSelectionIndex = Math.max(0, menuSelectionIndex - 1); updateMenuUI(); }
+            else if (key === 'd' || key === 'arrowright') { menuSelectionIndex = Math.min(maxIndex, menuSelectionIndex + 1); updateMenuUI(); }
+            else if (key === 'enter') {
+                if (gameState === 'start') selectClass(['glitch', 'void', 'chrono', 'miner'][menuSelectionIndex]);
+                else if (gameState === 'levelup') chooseUpgrade(currentUpgrades[menuSelectionIndex].id);
+                else if (gameState === 'bossReward') chooseBossUpgrade(currentUpgrades[menuSelectionIndex].id);
             }
-        } else if (gameState === 'gameover' && key === 'enter') {
-            location.reload(); 
         }
     });
-
     window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
     function updateMenuUI() {
-        if (gameState === 'start') {
-            const cards = document.querySelectorAll('#screen-start .card');
-            cards.forEach((card, index) => {
-                if (index === menuSelectionIndex) card.classList.add('selected');
-                else card.classList.remove('selected');
+        const screens = ['#screen-start', '#screen-levelup', '#screen-boss-reward'];
+        screens.forEach(s => {
+            const cards = document.querySelectorAll(`${s} .card, ${s} .reward-card`);
+            cards.forEach((c, i) => {
+                if (i === menuSelectionIndex) c.classList.add('selected');
+                else c.classList.remove('selected');
             });
-        } else if (gameState === 'levelup') {
-            const cards = document.querySelectorAll('#screen-levelup .reward-card');
-            cards.forEach((card, index) => {
-                if (index === menuSelectionIndex) card.classList.add('selected');
-                else card.classList.remove('selected');
-            });
-        } else if (gameState === 'bossReward') {
-            const cards = document.querySelectorAll('#screen-boss-reward .reward-card');
-            cards.forEach((card, index) => {
-                if (index === menuSelectionIndex) card.classList.add('selected');
-                else card.classList.remove('selected');
-            });
-        }
+        });
     }
 
     function selectClass(className) {
@@ -249,751 +148,590 @@
         document.getElementById('screen-start').classList.add('hidden');
         document.getElementById('ui').classList.remove('hidden');
         
-        let classNames = { glitch: '글리치 워커', void: '보이드 마스터', chrono: '크로노 브레이커', miner: '오버로드 블래스터' };
+        const classNames = { glitch: '글리치 워커', void: '보이드 마스터', chrono: '크로노 브레이커', miner: '오버로드 블래스터' };
         document.getElementById('ui-class').innerText = classNames[className];
+        document.getElementById('ui-class-skill-name').innerText = 
+            className === 'glitch' ? '[SHIFT: SHOTGUN]' : className === 'void' ? '[SHIFT: VOID]' : className === 'chrono' ? '[SHIFT: WARP]' : '[SHIFT: NUKE]';
+
+        if (className === 'glitch') { player.maxHp = 80; player.atkSpd = 20; }
+        else if (className === 'void') { player.maxHp = 120; player.atkSpd = 30; }
+        else if (className === 'chrono') { player.maxHp = 100; player.atkSpd = 24; }
+        else if (className === 'miner') { player.maxHp = 140; player.atkSpd = 40; }
         
-        if (className === 'glitch') player.maxHp = 80;
-        else if (className === 'void') player.maxHp = 120;
-        else if (className === 'chrono') player.maxHp = 100;
-        else if (className === 'miner') player.maxHp = 140;
-        
-        player.hp = player.maxHp; 
-        
-        keys['a'] = false; keys['d'] = false; 
+        player.hp = player.maxHp;
         gameState = 'play';
         gameLoop();
     }
 
-    function getRandomUpgrades(count) {
-        let availablePool = upgradePool.filter(u => {
-            if (u.classReq && u.classReq !== myClass) return false;
-            if (u.id === 'skill_dash' && player.hasDash) return false;
-            if (u.id === 'skill_shotgun' && player.hasShotgun) return false;
-            if (u.id === 'skill_blackhole' && player.hasBlackhole) return false;
-            if (u.id === 'skill_timestop' && player.hasTimestop) return false;
-            if (u.id === 'skill_nuke' && player.hasNuke) return false;
-            return true;
-        });
-        let shuffled = [...availablePool].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
+    function startShake(duration, intensity) {
+        shakeTimer = duration;
+        shakeIntensity = intensity;
     }
 
-    function getUltimateData() {
-        if (myClass === 'glitch') return { id: 'ult_awaken', title: '⚡ [ULT] 시스템 오버클럭', desc: '7초간 공격 속도 +300%, 이동 속도 +50%, 100% 크리티컬 무쌍 모드에 진입합니다.', color: '#ff007f' };
-        if (myClass === 'void') return { id: 'ult_awaken', title: '🔮 [ULT] 사건의 지평선', desc: '5초간 화면 전체의 적들을 강력하게 끌어당겨 분쇄하는 싱귤래리티를 켜고, 받는 피해량이 80% 감소합니다.', color: '#ff007f' };
-        if (myClass === 'chrono') return { id: 'ult_awaken', title: '⏳ [ULT] 세계선 간섭', desc: '4초간 보스를 포함한 맵 전체의 모든 움직임과 투사체를 완전 정지시키고 붕괴 지속 피해를 입힙니다.', color: '#ff007f' };
-        return { id: 'ult_awaken', title: '💥 [ULT] 멜트다운', desc: '화면 전체 초토화 핵폭발을 일으킨 후, 8초간 주변을 녹이는 불꽃 지대를 형성하며 최대 체력의 50% 방어막을 획득합니다.', color: '#ff007f' };
-    }
-
-    function renderUpgrades() {
-        const container = document.getElementById('levelup-cards');
-        container.innerHTML = '';
-        currentUpgrades.forEach((u, i) => {
-            let extraClass = (level === 10) ? 'ultimate-card' : '';
-            container.innerHTML += `
-                <div class="reward-card ${extraClass} ${i === 0 ? 'selected' : ''}" onclick="selectUpgradeFromMouse(${i})">
-                    <h3 style="color: ${u.color}; margin-top: 0; margin-bottom: 8px; font-size: 15px;">${u.title}</h3>
-                    <p style="font-size: 12px; color: #ccc; margin: 0; line-height: 1.4;">${u.desc}</p>
-                </div>
-            `;
-        });
-    }
-
-    function selectUpgradeFromMouse(index) {
-        if (gameState === 'levelup') { chooseUpgrade(currentUpgrades[index].id); }
-    }
-
-    function triggerBossReward() {
-        gameState = 'bossReward';
-        let available = bossUpgradePool.filter(u => {
-            if(u.id === 'boss_drone' && player.bossDrones >= 3) return false;
-            if(u.id === 'boss_shield' && player.hasBossShield) return false;
-            if(u.id === 'boss_nova' && player.hasBossNova) return false;
-            return true;
-        });
+    function drawBackground() {
+        ctx.fillStyle = 'rgba(5, 5, 8, 0.35)'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        if(available.length === 0) {
-            player.bonusAtk += 10; player.maxHp += 50; player.hp += 50;
-            resumeGameCheckLevelUp();
-            return;
-        }
-
-        currentUpgrades = [...available].sort(() => 0.5 - Math.random()).slice(0, 3);
-        const container = document.getElementById('boss-reward-cards');
-        container.innerHTML = '';
-        currentUpgrades.forEach((u, i) => {
-            container.innerHTML += `
-                <div class="reward-card boss-card ${i === 0 ? 'selected' : ''}" onclick="selectBossUpgradeFromMouse(${i})">
-                    <h3 style="color: ${u.color}; margin-top: 0; margin-bottom: 8px; font-size: 15px;">${u.title}</h3>
-                    <p style="font-size: 12px; color: #ccc; margin: 0; line-height: 1.4;">${u.desc}</p>
-                </div>
-            `;
-        });
-        menuSelectionIndex = 0;
-        updateMenuUI();
-        document.getElementById('screen-boss-reward').classList.remove('hidden');
+        const gridSize = 60;
+        const offsetX = -camera.x % gridSize, offsetY = -camera.y % gridSize;
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.08)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = offsetX; x < canvas.width; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+        for (let y = offsetY; y < canvas.height; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+        ctx.stroke();
     }
 
-    function selectBossUpgradeFromMouse(index) {
-        if (gameState === 'bossReward') chooseBossUpgrade(currentUpgrades[index].id);
+    function triggerGameOver() {
+        gameState = 'gameover';
+        document.getElementById('final-lvl').innerText = level;
+        document.getElementById('screen-gameover').classList.remove('hidden');
     }
 
-    function chooseBossUpgrade(type) {
-        if (type === 'boss_drone') { player.bossDrones++; if(!bossSkillNames.includes('전투 드론')) bossSkillNames.push('전투 드론'); }
-        if (type === 'boss_shield') { player.hasBossShield = true; if(!bossSkillNames.includes('방어막')) bossSkillNames.push('방어막'); }
-        if (type === 'boss_nova') { player.hasBossNova = true; if(!bossSkillNames.includes('노바')) bossSkillNames.push('노바'); }
-
-        document.getElementById('ui-boss-skills').innerText = bossSkillNames.join(', ');
-        document.getElementById('screen-boss-reward').classList.add('hidden');
-        resumeGameCheckLevelUp();
-    }
-
-    function resumeGameCheckLevelUp() {
-        checkLevelUp(); 
-        if (gameState !== 'levelup') {
-            gameState = 'play';
-            keys['a'] = false; keys['d'] = false; keys[' '] = false; keys['shift'] = false; keys['r'] = false;
-            gameLoop(); 
-        }
-    }
-
-    function checkLevelUp() {
-        if (currentExp >= nextLevelExp) {
-            currentExp -= nextLevelExp;
-            level++;
-            nextLevelExp = Math.floor(nextLevelExp * 1.3); 
-            
-            gameState = 'levelup';
-            
-            if (level === 10) {
-                // 10레벨 전용 궁극기 락온 잠금해제 시퀀스
-                document.getElementById('levelup-title').innerText = "⚡ ULTIMATE AWAKENING ⚡";
-                document.getElementById('levelup-title').style.color = "#ff007f";
-                document.getElementById('levelup-desc').innerText = "차원의 한계를 돌파했습니다. 고유 초필살 궁극기가 깨어납니다.";
-                currentUpgrades = [getUltimateData()];
-            } else {
-                document.getElementById('levelup-title').innerText = "▲ LEVEL UP ▲";
-                document.getElementById('levelup-title').style.color = "#00ffcc";
-                document.getElementById('levelup-desc').innerText = "차원의 힘이 증폭되었습니다. 보상을 선택하세요.";
-                currentUpgrades = getRandomUpgrades(3);
-            }
-            
-            renderUpgrades();
-            menuSelectionIndex = 0; 
-            updateMenuUI();
-            document.getElementById('screen-levelup').classList.remove('hidden');
-        }
-        updateUI(true); 
-    }
-
-    function chooseUpgrade(type) {
-        if (type === 'atk') player.bonusAtk += 3; 
-        if (type === 'atkSpd') player.atkSpdBonus += 0.2; 
-        if (type === 'maxHp') { player.maxHp += 25; player.hp += 25; }
-        if (type === 'regen') player.regenAmount += 0.015; 
-        if (type === 'range') player.rangeBonus += 0.15; 
-        if (type === 'cdr') player.cdrBonus -= 0.15; // 쿨타임 감소 버프 계산식
-        if (type === 'skill_dash') player.hasDash = true;
-        if (type === 'skill_shotgun') player.hasShotgun = true;
-        if (type === 'skill_blackhole') player.hasBlackhole = true;
-        if (type === 'skill_timestop') player.hasTimestop = true;
-        if (type === 'skill_nuke') player.hasNuke = true;
-        
-        if (type === 'ult_awaken') {
-            player.hasUltimate = true;
-            if (myClass === 'glitch') player.maxUltCooldown = 40 * 60;
-            if (myClass === 'void') player.maxUltCooldown = 55 * 60;
-            if (myClass === 'chrono') player.maxUltCooldown = 50 * 60;
-            if (myClass === 'miner') player.maxUltCooldown = 60 * 60;
-            player.ultCooldown = 0;
-        }
-
-        document.getElementById('screen-levelup').classList.add('hidden');
-        keys['a'] = false; keys['d'] = false; keys[' '] = false; keys['shift'] = false; keys['r'] = false;
-        gameState = 'play';
-        gameLoop();
-    }
-
-    function updateUI(force = false) {
-        if (!force) {
-            uiFrameCounter++;
-            if (uiFrameCounter % 10 !== 0) return; 
-        }
-
+    function updateUI() {
+        uiFrameCounter++; if (uiFrameCounter % 5 !== 0) return;
         document.getElementById('ui-lvl').innerText = level;
         document.getElementById('ui-exp').innerText = currentExp;
         document.getElementById('ui-next-exp').innerText = nextLevelExp;
         document.getElementById('ui-hp').innerText = Math.max(0, Math.floor(player.hp));
         document.getElementById('ui-max-hp').innerText = player.maxHp;
         
-        if (player.hasDash) {
-            let cdSec = Math.ceil(player.dashCooldown / 60);
-            document.getElementById('ui-cd-dash').innerText = cdSec > 0 ? `${cdSec}초 대기` : '준비 완료!';
-            document.getElementById('ui-cd-dash').style.color = cdSec > 0 ? '#888' : '#fff';
-        }
+        document.getElementById('ui-cd-dash').innerText = player.hasDash ? (player.dashCooldown > 0 ? Math.ceil(player.dashCooldown/60)+'s' : 'READY') : 'LOCKED';
         
-        let skillNameElement = document.getElementById('ui-class-skill-name');
-        let skillCdElement = document.getElementById('ui-cd-class');
+        let classCd = myClass === 'glitch' ? player.shotgunCooldown : myClass === 'void' ? player.blackholeCooldown : myClass === 'chrono' ? player.timestopCooldown : player.nukeCooldown;
+        let hasClassSkill = myClass === 'glitch' ? player.hasShotgun : myClass === 'void' ? player.hasBlackhole : myClass === 'chrono' ? player.hasTimestop : player.hasNuke;
+        document.getElementById('ui-cd-class').innerText = hasClassSkill ? (classCd > 0 ? Math.ceil(classCd/60)+'s' : 'READY') : 'LOCKED';
 
-        if (myClass === 'glitch' && player.hasShotgun) {
-            let cdSec = Math.ceil(player.shotgunCooldown / 60);
-            skillNameElement.innerText = '[SHIFT 샷건]'; skillNameElement.style.color = '#ff5500';
-            skillCdElement.innerText = cdSec > 0 ? `${cdSec}초 대기` : '준비 완료!';
-            skillCdElement.style.color = cdSec > 0 ? '#888' : '#fff';
-        } else if (myClass === 'void' && player.hasBlackhole) {
-            let cdSec = Math.ceil(player.blackholeCooldown / 60);
-            skillNameElement.innerText = '[SHIFT 블랙홀]'; skillNameElement.style.color = '#9900ff';
-            skillCdElement.innerText = cdSec > 0 ? `${cdSec}초 대기` : '준비 완료!';
-            skillCdElement.style.color = cdSec > 0 ? '#888' : '#fff';
-        } else if (myClass === 'chrono' && player.hasTimestop) {
-            let cdSec = Math.ceil(player.timestopCooldown / 60);
-            skillNameElement.innerText = '[SHIFT 시간 왜곡]'; skillNameElement.style.color = '#00e6ff';
-            skillCdElement.innerText = cdSec > 0 ? `${cdSec}초 대기` : '준비 완료!';
-            skillCdElement.style.color = cdSec > 0 ? '#888' : '#fff';
-        } else if (myClass === 'miner' && player.hasNuke) {
-            let cdSec = Math.ceil(player.nukeCooldown / 60);
-            skillNameElement.innerText = '[SHIFT 융합 핵폭탄]'; skillNameElement.style.color = '#ff3300';
-            skillCdElement.innerText = cdSec > 0 ? `${cdSec}초 대기` : '준비 완료!';
-            skillCdElement.style.color = cdSec > 0 ? '#888' : '#fff';
-        }
-
-        // 궁극기[R] 실시간 UI 렌더링 스로틀러 탑재
-        let ultCdElement = document.getElementById('ui-cd-ult');
+        let ultElement = document.getElementById('ui-cd-ult');
         if (player.hasUltimate) {
-            if (player.ultDuration > 0) {
-                ultCdElement.innerText = `🔥 가동 중! (${Math.ceil(player.ultDuration / 60)}초)`;
-                ultCdElement.style.color = '#ff00ff';
-            } else {
-                let cdSec = Math.ceil(player.ultCooldown / 60);
-                ultCdElement.innerText = cdSec > 0 ? `${cdSec}초 대기` : 'READY (R 눌러 발사)';
-                ultCdElement.style.color = cdSec > 0 ? '#888' : '#ff007f';
-            }
+            if (player.ultDuration > 0) ultElement.innerText = "💥 ACTIVATED !!";
+            else ultElement.innerText = player.ultCooldown > 0 ? Math.ceil(player.ultCooldown/60)+'s' : 'READY (R)';
+        } else {
+            ultElement.innerText = 'Lv.10 LOCK';
         }
-
-        let timeLeft = Math.max(0, Math.ceil(bossTimerFrames / 60));
-        document.getElementById('ui-boss-timer').innerText = bossActive ? "전투 중!" : timeLeft;
+        document.getElementById('ui-boss-timer').innerText = bossActive ? '⚠️ BOSS WAR ⚠️' : `NEXT BOSS: ${Math.ceil(bossTimerFrames/60)}s`;
     }
 
-    function getDist(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); }
-    function inCamera(x, y, radius = 0) {
-        return (x + radius >= camera.x && x - radius <= camera.x + canvas.width &&
-                y + radius >= camera.y && y - radius <= camera.y + canvas.height);
-    }
-
-    function takeDamage(amount) {
-        // 보이드 마스터 궁극기 가동 중 피해 80% 상쇄(20%만 받음)
-        if (myClass === 'void' && player.ultDuration > 0) amount *= 0.2;
-
-        // 오버로드 블래스터 강철 보호막 흡수 기믹
-        if (player.ultShield && player.ultShield > 0) {
-            player.ultShield -= amount;
-            createParticles(player.x, player.y, '#ffaa00', 6, 4);
-            if (player.ultShield < 0) { player.hp += player.ultShield; player.ultShield = 0; }
-            return;
-        }
-
-        if (player.hasBossShield && player.shieldCooldown <= 0) {
-            player.shieldCooldown = 20 * 60; createParticles(player.x, player.y, '#00ccff', 25, 8); return; 
-        }
-        if (player.damageCooldown === 0) {
-            player.hp -= amount; player.damageCooldown = player.cooldownDuration;
-            createParticles(player.x, player.y, '#ff3333', 12, 6);
-            if (player.hp <= 0) { 
-                gameState = 'gameover'; document.getElementById('final-lvl').innerText = level; document.getElementById('screen-gameover').classList.remove('hidden'); 
-            }
-        }
-    }
-
-    function autoAttack() {
-        attackTimer++;
-
-        if (myClass === 'glitch') {
-            let currentDelay = Math.max(4, Math.round(36 / player.atkSpdBonus)); 
-            if (player.ultDuration > 0) currentDelay = Math.max(1, Math.round(7 / player.atkSpdBonus)); // 공격 속도 +300% 극대화 랩업
-
-            if (attackTimer % currentDelay === 0 && enemies.length > 0) {
-                let target = enemies[0]; let minDist = getDist(player.x, player.y, target.x, target.y);
-                enemies.forEach(e => { let d = getDist(player.x, player.y, e.x, e.y); if (d < minDist) { minDist = d; target = e; } });
-
-                let angle = Math.atan2(target.y - player.y, target.x - player.x);
-                let isCrit = (Math.random() < 0.2) || (player.ultDuration > 0); // 궁극기 가동 중 100% 치명타
-                let finalDmg = isCrit ? (8 + player.bonusAtk) * 3 : (8 + player.bonusAtk);
-
-                projectiles.push({
-                    x: player.x, y: player.y, vx: Math.cos(angle) * 9, vy: Math.sin(angle) * 9,
-                    radius: (isCrit ? 8 : 5) * player.rangeBonus, color: isCrit ? '#ffff00' : '#00ffcc', dmg: finalDmg, isCrit: isCrit 
-                });
-            }
-        } 
-        else if (myClass === 'void') {
-            let currentDelay = Math.max(2, Math.round(18 / player.atkSpdBonus));
-            if (attackTimer % currentDelay === 0) {
-                let voidRadius = 110 * player.rangeBonus;
-                enemies.forEach((enemy) => {
-                    if (getDist(player.x, player.y, enemy.x, enemy.y) < voidRadius + enemy.radius) {
-                        enemy.hp -= (1.0 + player.bonusAtk * 0.3); if(Math.random() < 0.4) createParticles(enemy.x, enemy.y, '#ff007f', 1);
-                    }
-                });
-            }
-        }
-        else if (myClass === 'chrono') {
-            let currentDelay = Math.max(6, Math.round(42 / player.atkSpdBonus));
-            if (attackTimer % currentDelay === 0 && enemies.length > 0) {
-                let target = enemies[0]; let minDist = getDist(player.x, player.y, target.x, target.y);
-                enemies.forEach(e => { let d = getDist(player.x, player.y, e.x, e.y); if (d < minDist) { minDist = d; target = e; } });
-
-                let baseAngle = Math.atan2(target.y - player.y, target.x - player.x);
-                for(let i = -1; i <= 1; i++) {
-                    let angle = baseAngle + (i * 0.22);
-                    projectiles.push({
-                        x: player.x, y: player.y, vx: Math.cos(angle) * 8.5, vy: Math.sin(angle) * 8.5,
-                        radius: 4.5 * player.rangeBonus, color: '#00e6ff', dmg: 6.5 + player.bonusAtk, isCrit: false
-                    });
-                }
-            }
-        }
-        else if (myClass === 'miner') {
-            let currentDelay = Math.max(12, Math.round(60 / player.atkSpdBonus));
-            if (attackTimer % currentDelay === 0 && enemies.length > 0) {
-                let target = enemies[0]; let minDist = getDist(player.x, player.y, target.x, target.y);
-                enemies.forEach(e => { let d = getDist(player.x, player.y, e.x, e.y); if (d < minDist) { minDist = d; target = e; } });
-
-                let angle = Math.atan2(target.y - player.y, target.x - player.x);
-                projectiles.push({
-                    x: player.x, y: player.y, vx: Math.cos(angle) * 6, vy: Math.sin(angle) * 6,
-                    radius: 10 * player.rangeBonus, color: '#ff5500', dmg: 20 + player.bonusAtk, isCrit: false, isExplosive: true 
-                });
-            }
-        }
-    }
-
-    function createParticles(x, y, color, count = 4, speed = 5) {
-        if (!inCamera(x, y, 50)) return;
-        for(let i=0; i<count; i++) {
-            particles.push({ x, y, vx: (Math.random() - 0.5) * speed, vy: (Math.random() - 0.5) * speed, life: 12 + Math.random() * 8, color });
-        }
-    }
-
-    function spawnBoss() {
-        bossActive = true; bossCount++; enemies = []; 
-        let angle = Math.random() * Math.PI * 2;
-        let spawnX = Math.max(50, Math.min(WORLD_WIDTH - 50, player.x + Math.cos(angle) * 450));
-        let spawnY = Math.max(50, Math.min(WORLD_HEIGHT - 50, player.y + Math.sin(angle) * 450));
-        
-        let selectedType = (bossCount === 1) ? 'shooter' : ['shooter', 'dasher', 'summoner'][Math.floor(Math.random() * 3)];
-        bossObj = { x: spawnX, y: spawnY, isBoss: true, stateTimer: 0, isOverheated: false, overheatTimer: 0 };
-        let uiNameStr = ""; let uiColorStr = "";
-
-        if (selectedType === 'shooter') {
-            bossObj.maxHp = 500 + (bossCount * 250); bossObj.hp = bossObj.maxHp; bossObj.radius = 35; bossObj.speed = 1.1; bossObj.color = '#ff0055'; bossObj.bossType = 'shooter';
-            uiNameStr = "⚠️ 디스트로이어 요인 출현 ⚠️"; uiColorStr = "#ff0055";
-        } else if (selectedType === 'dasher') {
-            bossObj.maxHp = 800 + (bossCount * 300); bossObj.hp = bossObj.maxHp; bossObj.radius = 30; bossObj.speed = 1.6; bossObj.color = '#ff8800'; bossObj.bossType = 'dasher';
-            uiNameStr = "⚠️ 버서커 요인 출현 ⚠️"; uiColorStr = "#ff8800";
-        } else if (selectedType === 'summoner') {
-            bossObj.maxHp = 1000 + (bossCount * 400); bossObj.hp = bossObj.maxHp; bossObj.radius = 40; bossObj.speed = 1.3; bossObj.color = '#9900ff'; bossObj.bossType = 'summoner';
-            uiNameStr = "⚠️ 퀸 에러 출현 ⚠️"; uiColorStr = "#9900ff";
-        }
-
-        enemies.push(bossObj);
-        const bossNameElement = document.getElementById('boss-ui-name');
-        bossNameElement.innerText = uiNameStr; bossNameElement.style.color = uiColorStr; bossNameElement.style.textShadow = `0 0 8px ${uiColorStr}`;
-        document.querySelector('.boss-bar-fill').style.background = `linear-gradient(90deg, ${uiColorStr}, #fff)`;
-        document.getElementById('boss-ui').classList.remove('hidden');
-    }
-
-    function drawBackground() {
-        ctx.fillStyle = '#0a0a12'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const gridSize = 80; const offsetX = -camera.x % gridSize, offsetY = -camera.y % gridSize;
-        
-        ctx.strokeStyle = 'rgba(0, 255, 204, 0.15)'; ctx.lineWidth = 1.5; ctx.beginPath();
-        for (let x = offsetX; x < canvas.width; x += gridSize) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
-        for (let y = offsetY; y < canvas.height; y += gridSize) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
-        ctx.stroke(); 
-        
-        ctx.strokeStyle = 'rgba(255, 0, 127, 0.3)'; ctx.lineWidth = 3; ctx.beginPath();
-        ctx.moveTo(1500 - camera.x, 0); ctx.lineTo(1500 - camera.x, canvas.height);
-        ctx.moveTo(0, 1500 - camera.y); ctx.lineTo(canvas.width, 1500 - camera.y); ctx.stroke();
-    }
-
-    let spawnTimer = 0;
     function gameLoop() {
         if (gameState !== 'play') return;
+        let isTimeStopped = (myClass === 'chrono' && player.ultDuration > 0);
 
-        // 크로노 브레이커 궁극기 가동 시 글로벌 시간정지 플래그 연산 가속
-        let isTimeStoppedGlobal = (myClass === 'chrono' && player.ultDuration > 0);
-
-        if (!isTimeStoppedGlobal) {
+        if (!isTimeStopped) {
             spawnTimer++;
+            attackTimer++;
             if (!bossActive) { bossTimerFrames--; if (bossTimerFrames <= 0) spawnBoss(); }
         }
 
+        if (spawnTimer % 60 === 0 && player.hp < player.maxHp) {
+            player.hp = Math.min(player.maxHp, player.hp + 0.5 + player.regenAmount);
+        }
+        
         if (player.damageCooldown > 0) player.damageCooldown--;
         if (player.dashCooldown > 0) player.dashCooldown--;
-        if (player.shieldCooldown > 0) player.shieldCooldown--; 
-        
-        if (myClass === 'glitch' && player.shotgunCooldown > 0) player.shotgunCooldown--;
-        if (myClass === 'void' && player.blackholeCooldown > 0) player.blackholeCooldown--;
-        if (myClass === 'chrono' && player.timestopCooldown > 0) player.timestopCooldown--;
-        if (myClass === 'miner' && player.nukeCooldown > 0) player.nukeCooldown--;
-
-        // [R] 궁극기 상태 머신 타이머 업데이트 및 감속
         if (player.ultCooldown > 0) player.ultCooldown--;
-        if (player.ultDuration > 0) {
-            player.ultDuration--;
-            if (player.ultDuration <= 0 && player.ultShield > 0) player.ultShield = 0; // 방어막 만료
-        }
+        if (player.ultDuration > 0) player.ultDuration--;
+        if (player.shotgunCooldown > 0) player.shotgunCooldown--;
+        if (player.blackholeCooldown > 0) player.blackholeCooldown--;
+        if (player.timestopCooldown > 0) player.timestopCooldown--;
+        if (player.nukeCooldown > 0) player.nukeCooldown--;
+        if (player.hasBossShield && player.shieldCooldown > 0) player.shieldCooldown--;
 
-        if (player.hp < player.maxHp) player.hp = Math.min(player.maxHp, player.hp + player.regenAmount);
-
-        if (player.hasBossNova && !isTimeStoppedGlobal) {
-            player.novaTimer++;
-            if (player.novaTimer >= 10 * 60) { 
-                player.novaTimer = 0; createParticles(player.x, player.y, '#ff8800', 40, 15);
-                enemies.forEach(e => { if (getDist(player.x, player.y, e.x, e.y) < 280) { e.hp -= 150 + (player.bonusAtk * 3); createParticles(e.x, e.y, '#ff8800', 5, 5); } });
-            }
-        }
-
-        // [R] 궁극기 발사 키다운 핸들러 트리거
-        if (keys['r'] && player.hasUltimate && player.ultCooldown <= 0) {
-            player.ultCooldown = Math.round(player.maxUltCooldown * player.cdrBonus);
-            
-            if (myClass === 'glitch') player.ultDuration = 7 * 60; // 7초 버프
-            if (myClass === 'void') player.ultDuration = 5 * 60;  // 5초 블랙홀 흡입기
-            if (myClass === 'chrono') player.ultDuration = 4 * 60; // 4초 전체 정지
-            if (myClass === 'miner') {
-                player.ultDuration = 8 * 60; // 8초 장판기
-                player.ultShield = player.maxHp * 0.5; // 50% 실드 충전
-                shockwaves.push({ x: player.x, y: player.y, radius: 40, expandSpeed: 22, life: 40, maxLife: 40, color: '#ff3300', isPlayerOwned: true, dmg: 450 + (player.bonusAtk * 12) });
-                createParticles(player.x, player.y, '#ff1100', 70, 16);
-            }
-            keys['r'] = false;
-        }
-
-        if (player.hasDash && keys[' '] && player.dashCooldown <= 0) {
-            player.dashCooldown = player.maxDashCooldown; player.dashDuration = 12;
+        let moveSpd = player.speed * ((myClass === 'glitch' && player.ultDuration > 0) ? 1.8 : 1.0);
+        if (player.dashDuration > 0) {
+            player.x += player.dashVx; player.y += player.dashVy; player.dashDuration--;
+        } else {
             let dx = 0, dy = 0;
             if (keys['w'] || keys['arrowup']) dy -= 1; if (keys['s'] || keys['arrowdown']) dy += 1;
             if (keys['a'] || keys['arrowleft']) dx -= 1; if (keys['d'] || keys['arrowright']) dx += 1;
-            if (dx === 0 && dy === 0) dx = 1; 
-            let len = Math.hypot(dx, dy);
-            player.dashVx = (dx / len) * (player.speed * 4.5); player.dashVy = (dy / len) * (player.speed * 4.5);
+            if (dx !== 0 || dy !== 0) {
+                let angle = Math.atan2(dy, dx);
+                player.x += Math.cos(angle) * moveSpd; player.y += Math.sin(angle) * moveSpd;
+            }
+        }
+        player.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.y));
+
+        camera.x = player.x - canvas.width / 2; camera.y = player.y - canvas.height / 2;
+
+        let shakeX = 0, shakeY = 0;
+        if (shakeTimer > 0) {
+            shakeX = (Math.random() - 0.5) * shakeIntensity;
+            shakeY = (Math.random() - 0.5) * shakeIntensity;
+            shakeTimer--;
+        }
+
+        drawBackground();
+        ctx.save();
+        ctx.translate(shakeX, shakeY);
+
+        if (!isTimeStopped && !bossActive && spawnTimer % 45 === 0 && enemies.length < 25 + level * 2) {
+            let angle = Math.random() * Math.PI * 2;
+            let dist = 500 + Math.random() * 200;
+            enemies.push({
+                x: player.x + Math.cos(angle) * dist,
+                y: player.y + Math.sin(angle) * dist,
+                radius: 12 + Math.random() * 6,
+                speed: 1.2 + Math.random() * 0.8,
+                hp: 20 + level * 8,
+                maxHp: 20 + level * 8,
+                color: '#ff3366'
+            });
+        }
+
+        let target = null, minDist = 9999;
+        enemies.forEach(e => {
+            let d = getDist(player.x, player.y, e.x, e.y);
+            if (d < minDist) { minDist = d; target = e; }
+        });
+
+        let currentAtkSpd = (myClass === 'glitch' && player.ultDuration > 0) ? 8 : player.atkSpd;
+        if (target && attackTimer % currentAtkSpd === 0 && !isTimeStopped) {
+            let angle = Math.atan2(target.y - player.y, target.x - player.x);
+            let pDmg = 15 + player.bonusAtk;
+            
+            // ⏳ 크로노 브레이커 평타 부채꼴(3방향) 형상 변환 패치
+            if (myClass === 'chrono') {
+                let spreadAngles = [angle - 0.25, angle, angle + 0.25];
+                spreadAngles.forEach(ang => {
+                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(ang)*8, vy: Math.sin(ang)*8, radius: 4, color: '#00e6ff', dmg: pDmg * 0.8 });
+                });
+            } else if (myClass === 'miner') {
+                projectiles.push({ x: player.x, y: player.y, vx: Math.cos(angle)*7, vy: Math.sin(angle)*7, radius: 7, color: '#ffcc00', dmg: pDmg, isExplosive: true });
+            } else {
+                projectiles.push({ x: player.x, y: player.y, vx: Math.cos(angle)*9, vy: Math.sin(angle)*9, radius: 4, color: '#00ffcc', dmg: pDmg });
+            }
+        }
+
+        if (player.bossDrones > 0) {
+            player.droneAngle += 0.04;
+            for(let i=0; i<player.bossDrones; i++) {
+                let ang = player.droneAngle + (i * Math.PI * 2 / player.bossDrones);
+                let dx = player.x + Math.cos(ang) * 45;
+                let dy = player.y + Math.sin(ang) * 45;
+                ctx.beginPath(); ctx.arc(dx-camera.x, dy-camera.y, 5, 0, Math.PI*2);
+                ctx.fillStyle = '#ff0055'; ctx.fill();
+                
+                if (spawnTimer % 35 === 0 && target && !isTimeStopped) {
+                    let a = Math.atan2(target.y - dy, target.x - dx);
+                    projectiles.push({ x: dx, y: dy, vx: Math.cos(a)*8, vy: Math.sin(a)*8, radius: 3, color: '#ff0055', dmg: 10 + player.bonusAtk*0.5 });
+                }
+            }
+        }
+
+        if (player.hasBossNova && !isTimeStopped) {
+            player.novaTimer++;
+            if (player.novaTimer >= 480) { 
+                player.novaTimer = 0;
+                shockwaves.push({ x: player.x, y: player.y, radius: 10, expandSpeed: 9, maxRadius: 220, color: '#ff8800', dmg: 120 });
+                startShake(15, 8);
+            }
+        }
+
+        if (keys[' '] && player.hasDash && player.dashCooldown <= 0) {
+            let dx = 0, dy = 0;
+            if (keys['w'] || keys['arrowup']) dy -= 1; if (keys['s'] || keys['arrowdown']) dy += 1;
+            if (keys['a'] || keys['arrowleft']) dx -= 1; if (keys['d'] || keys['arrowright']) dx += 1;
+            if (dx !== 0 || dy !== 0) {
+                let angle = Math.atan2(dy, dx);
+                player.dashVx = Math.cos(angle) * 12; player.dashVy = Math.sin(angle) * 12;
+                player.dashDuration = 10; player.dashCooldown = player.maxDashCooldown;
+                startShake(6, 4);
+            }
         }
 
         if (keys['shift']) {
             if (myClass === 'glitch' && player.hasShotgun && player.shotgunCooldown <= 0) {
-                player.shotgunCooldown = player.maxShotgunCooldown; let angle = 0;
-                if (enemies.length > 0) {
-                    let target = enemies[0]; let minDist = getDist(player.x, player.y, target.x, target.y);
-                    enemies.forEach(e => { let d = getDist(player.x, player.y, e.x, e.y); if (d < minDist) { minDist = d; target = e; } });
-                    angle = Math.atan2(target.y - player.y, target.x - player.x);
+                player.shotgunCooldown = player.maxShotgunCooldown;
+                let baseAngle = target ? Math.atan2(target.y - player.y, target.x - player.x) : 0;
+                for(let i = -2; i <= 2; i++) {
+                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle + i*0.25)*10, vy: Math.sin(baseAngle + i*0.25)*10, radius: 5, color: '#ff5500', dmg: 25 });
                 }
-                for (let i = -2; i <= 2; i++) { projectiles.push({ x: player.x, y: player.y, vx: Math.cos(angle + i*0.25) * 11, vy: Math.sin(angle + i*0.25) * 11, radius: 7 * player.rangeBonus, color: '#ff5500', dmg: 25 + player.bonusAtk + player.shotgunBonusDmg, isCrit: false }); }
-                createParticles(player.x, player.y, '#ff5500', 10, 8); 
-            } 
-            else if (myClass === 'void' && player.hasBlackhole && player.blackholeCooldown <= 0) {
-                player.blackholeCooldown = player.maxBlackholeCooldown; let spawnX = player.x, spawnY = player.y;
-                if (enemies.length > 0) {
-                    let target = enemies[0]; let minDist = getDist(player.x, player.y, target.x, target.y);
-                    enemies.forEach(e => { let d = getDist(player.x, player.y, e.x, e.y); if (d < minDist) { minDist = d; target = e; } });
-                    spawnX = target.x; spawnY = target.y;
-                }
-                activeBlackholes.push({ x: spawnX, y: spawnY, life: 180, radius: 200 + player.blackholeRadiusBonus, pullPower: 2.5, dmg: 1.0 + (player.bonusAtk * 0.2), type: 'blackhole' });
+                startShake(10, 6);
             }
-            else if (myClass === 'chrono' && player.hasTimestop && player.timestopCooldown <= 0) {
-                player.timestopCooldown = player.maxTimestopCooldown; let spawnX = player.x, spawnY = player.y;
-                if (enemies.length > 0) {
-                    let target = enemies[0]; let minDist = getDist(player.x, player.y, target.x, target.y);
-                    enemies.forEach(e => { let d = getDist(player.x, player.y, e.x, e.y); if (d < minDist) { minDist = d; target = e; } });
-                    spawnX = target.x; spawnY = target.y;
-                }
-                activeBlackholes.push({ x: spawnX, y: spawnY, life: 240, radius: 230 * player.rangeBonus, pullPower: 0, dmg: 0.6 + (player.bonusAtk * 0.1), type: 'timestop' });
+            if (myClass === 'void' && player.hasBlackhole && player.blackholeCooldown <= 0) {
+                player.blackholeCooldown = player.maxBlackholeCooldown;
+                activeBlackholes.push({ x: player.x, y: player.y, radius: 140, life: 240, type: 'void' });
             }
-            else if (myClass === 'miner' && player.hasNuke && player.nukeCooldown <= 0) {
+            if (myClass === 'chrono' && player.hasTimestop && player.timestopCooldown <= 0) {
+                player.timestopCooldown = player.maxTimestopCooldown;
+                activeBlackholes.push({ x: player.x, y: player.y, radius: 180, life: 300, type: 'chrono_warp' });
+            }
+            if (myClass === 'miner' && player.hasNuke && player.nukeCooldown <= 0) {
                 player.nukeCooldown = player.maxNukeCooldown;
-                shockwaves.push({ x: player.x, y: player.y, radius: 20, expandSpeed: 13, life: 35, maxLife: 35, color: '#ff3300', isPlayerOwned: true, dmg: 130 + (player.bonusAtk * 5) });
-                createParticles(player.x, player.y, '#ff5500', 50, 12);
+                let angle = target ? Math.atan2(target.y - player.y, target.x - player.x) : 0;
+                projectiles.push({ x: player.x, y: player.y, vx: Math.cos(angle)*6, vy: Math.sin(angle)*6, radius: 12, color: '#ff3300', dmg: 80, isExplosive: true });
             }
         }
 
-        // 글리치 궁극기 시 이속 상향 버프 가동
-        let moveSpeedModifier = (myClass === 'glitch' && player.ultDuration > 0) ? 1.5 : 1.0;
-        if (player.dashDuration > 0) {
-            player.x += player.dashVx; player.y += player.dashVy; player.dashDuration--; createParticles(player.x, player.y, '#fff', 1, 2); 
-        } else {
-            if (keys['w'] || keys['arrowup']) player.y -= player.speed * moveSpeedModifier;
-            if (keys['s'] || keys['arrowdown']) player.y += player.speed * moveSpeedModifier;
-            if (keys['a'] || keys['arrowleft']) player.x -= player.speed * moveSpeedModifier;
-            if (keys['d'] || keys['arrowright']) player.x += player.speed * moveSpeedModifier;
-        }
-
-        player.x = Math.max(player.radius, Math.min(WORLD_WIDTH - player.radius, player.x));
-        player.y = Math.max(player.radius, Math.min(WORLD_HEIGHT - player.radius, player.y));
-
-        camera.x = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, player.x - canvas.width / 2));
-        camera.y = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, player.y - canvas.height / 2));
-
-        updateUI(); drawBackground();
-        ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 8; ctx.strokeRect(0 - camera.x, 0 - camera.y, WORLD_WIDTH, WORLD_HEIGHT);
-
-        // 시간정지 궁극기 가동시 흑백 반전 톤 보정 처리
-        if (isTimeStoppedGlobal) { ctx.fillStyle = 'rgba(0, 230, 255, 0.06)'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
-
-        // 보이드 마스터 궁극기 [사건의 지평선] 실시간 그리기 및 흡입 필드
-        if (myClass === 'void' && player.ultDuration > 0) {
-            ctx.beginPath(); ctx.arc(player.x - camera.x, player.y - camera.y, 340, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(25, 0, 50, 0.18)'; ctx.fill();
-            ctx.strokeStyle = 'rgba(153, 0, 255, 0.45)'; ctx.lineWidth = 3; ctx.stroke();
-            
-            enemies.forEach(e => {
-                let d = getDist(player.x, player.y, e.x, e.y);
-                if (d < 340) {
-                    let angle = Math.atan2(player.y - e.y, player.x - e.x);
-                    let power = e.isBoss ? 0.6 : 4.5;
-                    e.x += Math.cos(angle) * power; e.y += Math.sin(angle) * power;
-                    e.hp -= (2.8 + player.bonusAtk * 0.4);
-                    if(Math.random() < 0.1) createParticles(e.x, e.y, '#ff00ff', 1, 3);
-                }
-            });
-        }
-
-        // 오버로드 블래스터 궁극기 [멜트다운] 방사능 오염 장판 연산
-        if (myClass === 'miner' && player.ultDuration > 0) {
-            ctx.beginPath(); ctx.arc(player.x - camera.x, player.y - camera.y, 220, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 68, 0, 0.14)'; ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 85, 0, 0.5)'; ctx.lineWidth = 2.5; ctx.stroke();
-            
-            enemies.forEach(e => {
-                if (getDist(player.x, player.y, e.x, e.y) < 220) {
-                    e.hp -= (3.5 + player.bonusAtk * 0.5);
-                    if(Math.random() < 0.1) createParticles(e.x, e.y, '#ffaa00', 1, 2);
-                }
-            });
-
-            // 보호막 가시성 외곽선 링 시각화
-            if (player.ultShield > 0) {
-                ctx.beginPath(); ctx.arc(player.x - camera.x, player.y - camera.y, player.radius + 7, 0, Math.PI * 2);
-                ctx.strokeStyle = '#ffaa00'; ctx.lineWidth = 2; ctx.stroke();
+        if (keys['r'] && player.hasUltimate && player.ultCooldown <= 0) {
+            player.ultCooldown = player.maxUltCooldown;
+            if (myClass === 'glitch') player.ultDuration = 7 * 60;
+            if (myClass === 'void') { player.ultDuration = 6 * 60; activeBlackholes.push({ x: player.x, y: player.y, radius: 300, life: 360, type: 'event_horizon' }); }
+            if (myClass === 'chrono') player.ultDuration = 4 * 60;
+            if (myClass === 'miner') {
+                player.ultDuration = 8 * 60; player.ultShield = player.maxHp * 0.8;
+                startShake(50, 28);
+                shockwaves.push({ x: player.x, y: player.y, radius: 30, expandSpeed: 16, maxRadius: 400, color: '#ff3300', dmg: 600 });
             }
+            keys['r'] = false;
         }
 
-        for(let i = activeBlackholes.length - 1; i >= 0; i--) {
-            let bh = activeBlackholes[i]; bh.life--;
-            if (bh.life <= 0) { activeBlackholes.splice(i, 1); continue; }
+        if (isTimeStopped) {
+            ctx.fillStyle = 'rgba(0, 230, 255, 0.12)'; ctx.fillRect(camera.x, camera.y, canvas.width, canvas.height);
+            ctx.strokeStyle = '#00e6ff'; ctx.lineWidth = 4; ctx.beginPath();
+            ctx.moveTo(player.x - camera.x, player.y - camera.y);
+            let handAngle = (player.ultDuration / 240) * Math.PI * 2;
+            ctx.lineTo(player.x - camera.x + Math.cos(handAngle)*80, player.y - camera.y + Math.sin(handAngle)*80);
+            ctx.stroke();
+        }
 
-            if (inCamera(bh.x, bh.y, bh.radius)) {
-                ctx.beginPath(); ctx.arc(bh.x - camera.x, bh.y - camera.y, bh.radius, 0, Math.PI * 2);
-                if (bh.type === 'timestop') {
-                    ctx.fillStyle = 'rgba(0, 230, 255, 0.07)'; ctx.fill();
-                    ctx.beginPath(); ctx.arc(bh.x - camera.x, bh.y - camera.y, 15 + Math.random()*3, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#00e6ff'; ctx.lineWidth = 2; ctx.stroke();
-                } else {
-                    ctx.fillStyle = 'rgba(75, 0, 130, 0.15)'; ctx.fill(); 
-                    ctx.beginPath(); ctx.arc(bh.x - camera.x, bh.y - camera.y, 25 + Math.random()*5, 0, Math.PI * 2);
-                    ctx.fillStyle = '#000'; ctx.fill(); ctx.strokeStyle = '#9900ff'; ctx.lineWidth = 3; ctx.stroke();
-                }
+        activeBlackholes.forEach((bh, bIdx) => {
+            bh.life--; if(bh.life <= 0) { activeBlackholes.splice(bIdx, 1); return; }
+            let gradient = ctx.createRadialGradient(bh.x-camera.x, bh.y-camera.y, 10, bh.x-camera.x, bh.y-camera.y, bh.radius);
+            if (bh.type === 'void') {
+                gradient.addColorStop(0, 'rgba(20, 0, 40, 0.6)'); gradient.addColorStop(1, 'rgba(153, 0, 255, 0.0)');
+            } else if (bh.type === 'event_horizon') {
+                gradient.addColorStop(0, 'rgba(0, 0, 0, 0.9)'); gradient.addColorStop(0.5, 'rgba(255, 0, 127, 0.3)'); gradient.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+                startShake(2, 3);
+            } else {
+                gradient.addColorStop(0, 'rgba(0, 50, 100, 0.4)'); gradient.addColorStop(1, 'rgba(0, 230, 255, 0.0)');
             }
+            ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(bh.x-camera.x, bh.y-camera.y, bh.radius, 0, Math.PI*2); ctx.fill();
 
             enemies.forEach(e => {
                 let d = getDist(bh.x, bh.y, e.x, e.y);
                 if (d < bh.radius) {
-                    if (bh.type === 'timestop') { e.hp -= bh.dmg; if(Math.random() < 0.1) createParticles(e.x, e.y, '#00e6ff', 1, 1); } 
-                    else {
-                        let angle = Math.atan2(bh.y - e.y, bh.x - e.x); e.x += Math.cos(angle) * bh.pullPower; e.y += Math.sin(angle) * bh.pullPower;
-                        e.hp -= bh.dmg; if(Math.random() < 0.2) createParticles(e.x, e.y, '#9900ff', 1, 2);
+                    if (bh.type === 'void' || bh.type === 'event_horizon') {
+                        let angle = Math.atan2(bh.y - e.y, bh.x - e.x);
+                        e.x += Math.cos(angle) * (bh.type === 'event_horizon' ? 3.5 : 1.8);
+                        e.y += Math.sin(angle) * (bh.type === 'event_horizon' ? 3.5 : 1.8);
+                        e.hp -= (bh.type === 'event_horizon' ? 1.5 : 0.4);
+                    } else if (bh.type === 'chrono_warp') {
+                        e.x -= (e.x - player.x) * 0.02; e.y -= (e.y - player.y) * 0.02;
                     }
                 }
             });
-        }
+        });
 
-        for (let i = shockwaves.length - 1; i >= 0; i--) {
-            let sw = shockwaves[i]; sw.radius += sw.expandSpeed; sw.life--;
-            if (inCamera(sw.x, sw.y, sw.radius)) {
-                ctx.beginPath(); ctx.arc(sw.x - camera.x, sw.y - camera.y, sw.radius, 0, Math.PI * 2); ctx.strokeStyle = sw.color; ctx.globalAlpha = sw.life / sw.maxLife; ctx.lineWidth = sw.isPlayerOwned ? 12 : 8; ctx.stroke(); ctx.globalAlpha = 1.0; 
-            }
-            if (sw.isPlayerOwned) {
-                enemies.forEach(e => { if (getDist(sw.x, sw.y, e.x, e.y) < sw.radius + e.radius) { e.hp -= (sw.dmg / sw.maxLife); if(Math.random() < 0.1) createParticles(e.x, e.y, sw.color, 1, 3); } });
-            }
-            if (sw.life <= 0) shockwaves.splice(i, 1);
-        }
+        projectiles.forEach((p, pIdx) => {
+            if(!isTimeStopped) { p.x += p.vx; p.y += p.vy; }
+            if(getDist(player.x, player.y, p.x, p.y) > 900) { projectiles.splice(pIdx, 1); return; }
 
-        ctx.beginPath(); ctx.arc(player.x - camera.x, player.y - camera.y, player.radius, 0, Math.PI * 2);
-        if (player.dashDuration > 0) ctx.fillStyle = '#fff';
-        else ctx.fillStyle = (player.damageCooldown > 0 && Math.floor(player.damageCooldown / 4) % 2 === 0) ? 'rgba(0, 255, 204, 0.3)' : '#00ffcc';
-        ctx.fill();
+            ctx.beginPath(); ctx.arc(p.x-camera.x, p.y-camera.y, p.radius, 0, Math.PI*2);
+            ctx.fillStyle = p.color; ctx.shadowBlur = 8; ctx.shadowColor = p.color; ctx.fill(); ctx.shadowBlur = 0;
 
-        if (myClass === 'void') {
-            ctx.beginPath(); ctx.arc(player.x - camera.x, player.y - camera.y, 110 * player.rangeBonus, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255, 0, 127, 0.2)'; ctx.lineWidth = 3; ctx.stroke();
-        }
-
-        if (player.hasBossShield && player.shieldCooldown <= 0) {
-            ctx.beginPath(); ctx.arc(player.x - camera.x, player.y - camera.y, player.radius + 12, 0, Math.PI * 2); ctx.strokeStyle = '#00ccff'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = 'rgba(0, 204, 255, 0.1)'; ctx.fill();
-        }
-
-        if (player.bossDrones > 0) {
-            player.droneAngle += 0.05;
-            for(let i=0; i<player.bossDrones; i++) {
-                let offset = (Math.PI * 2 / player.bossDrones) * i;
-                let dx = player.x + Math.cos(player.droneAngle + offset) * 75; let dy = player.y + Math.sin(player.droneAngle + offset) * 75;
-                if (inCamera(dx, dy, 6)) { ctx.beginPath(); ctx.arc(dx - camera.x, dy - camera.y, 6, 0, Math.PI*2); ctx.fillStyle = '#ff0055'; ctx.fill(); }
-                enemies.forEach(e => { if (getDist(dx, dy, e.x, e.y) < 6 + e.radius) { e.hp -= 2.0 + (player.bonusAtk * 0.1); if(Math.random() < 0.2) createParticles(e.x, e.y, '#ff0055', 1, 2); } });
-            }
-        }
-
-        autoAttack();
-
-        for (let i = particles.length - 1; i >= 0; i--) {
-            let p = particles[i]; p.x += p.vx; p.y += p.vy; p.life--;
-            if (p.life <= 0) { particles.splice(i, 1); continue; }
-            if (inCamera(p.x, p.y, 2)) { ctx.beginPath(); ctx.arc(p.x - camera.x, p.y - camera.y, 2, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill(); }
-        }
-
-        for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
-            let ep = enemyProjectiles[i];
-            if (!isTimeStoppedGlobal) { ep.x += ep.vx; ep.y += ep.vy; } // 시간 정지 시 투사체 동결
-            
-            if (inCamera(ep.x, ep.y, ep.radius)) {
-                ctx.beginPath(); ctx.arc(ep.x - camera.x, ep.y - camera.y, ep.radius, 0, Math.PI * 2); ctx.fillStyle = '#ff0055'; ctx.fill();
-            }
-            if (player.dashDuration <= 0 && getDist(ep.x, ep.y, player.x, player.y) < ep.radius + player.radius) {
-                takeDamage(18); enemyProjectiles.splice(i, 1); continue;
-            }
-            if (ep.x < 0 || ep.x > WORLD_WIDTH || ep.y < 0 || ep.y > WORLD_HEIGHT) enemyProjectiles.splice(i, 1);
-        }
-
-        for (let i = projectiles.length - 1; i >= 0; i--) {
-            let p = projectiles[i]; p.x += p.vx; p.y += p.vy;
-            if (p.x < 0 || p.x > WORLD_WIDTH || p.y < 0 || p.y > WORLD_HEIGHT) { projectiles.splice(i, 1); continue; }
-
-            if (inCamera(p.x, p.y, p.radius)) {
-                ctx.beginPath(); ctx.arc(p.x - camera.x, p.y - camera.y, p.radius, 0, Math.PI * 2); ctx.fillStyle = p.color; ctx.fill();
-            }
-
-            for (let j = enemies.length - 1; j >= 0; j--) {
-                let e = enemies[j];
+            enemies.forEach((e, eIdx) => {
                 if (getDist(p.x, p.y, e.x, e.y) < p.radius + e.radius) {
-                    e.hp -= p.dmg; createParticles(e.x, e.y, p.color, p.isCrit ? 15 : 4, 5);
+                    e.hp -= p.dmg;
+                    createParticles(p.x, p.y, p.color, 6, 4);
+                    projectiles.splice(pIdx, 1);
+
                     if (p.isExplosive) {
-                        shockwaves.push({ x: p.x, y: p.y, radius: 10, expandSpeed: 4.5, life: 14, maxLife: 14, color: '#ff5500', isPlayerOwned: true, dmg: p.dmg * 1.3 });
+                        startShake(12, 9);
+                        shockwaves.push({ x: p.x, y: p.y, radius: 10, expandSpeed: 7, maxRadius: 100, color: '#ff6600', dmg: p.dmg * 1.2 });
                     }
-                    projectiles.splice(i, 1); break;
+                }
+            });
+        });
+
+        enemyProjectiles.forEach((ep, epIdx) => {
+            if (!isTimeStopped) { ep.x += ep.vx; ep.y += ep.vy; }
+            if (getDist(player.x, player.y, ep.x, ep.y) > 950) { enemyProjectiles.splice(epIdx, 1); return; }
+
+            ctx.beginPath(); ctx.arc(ep.x - camera.x, ep.y - camera.y, ep.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ep.color; ctx.shadowBlur = 6; ctx.shadowColor = ep.color; ctx.fill(); ctx.shadowBlur = 0;
+
+            if (getDist(player.x, player.y, ep.x, ep.y) < player.radius + ep.radius) {
+                enemyProjectiles.splice(epIdx, 1);
+                if (player.damageCooldown <= 0 && player.dashDuration <= 0) {
+                    if (player.hasBossShield && player.shieldCooldown <= 0) {
+                        player.shieldCooldown = 900; player.damageCooldown = 30; return;
+                    }
+                    let finalDmg = ep.dmg;
+                    if (myClass === 'miner' && player.ultDuration > 0 && player.ultShield > 0) {
+                        player.ultShield -= finalDmg; if (player.ultShield < 0) player.ultShield = 0;
+                    } else {
+                        player.hp -= finalDmg;
+                    }
+                    player.damageCooldown = 45;
+                    startShake(12, 7);
+                    if (player.hp <= 0) triggerGameOver();
                 }
             }
-        }
+        });
 
-        // 시간 정지 중 몹 스폰 일시 차단
-        if (spawnTimer % 35 === 0 && !bossActive && !isTimeStoppedGlobal) {
-            let angle = Math.random() * Math.PI * 2;
-            let x = Math.max(20, Math.min(WORLD_WIDTH - 20, player.x + Math.cos(angle) * 500));
-            let y = Math.max(20, Math.min(WORLD_HEIGHT - 20, player.y + Math.sin(angle) * 500));
-            let isLargeMob = Math.random() < 0.2; 
-            
-            if (isLargeMob) {
-                enemies.push({ x, y, maxHp: 100, hp: 100, radius: 22, speed: 0.8, color: '#ff4400', expReward: 60, isBoss: false, isLarge: true });
-            } else {
-                enemies.push({ x, y, maxHp: 20, hp: 20, radius: 11, speed: 1.4, color: '#494d63', expReward: 20, isBoss: false, isLarge: false });
-            }
-        }
+        shockwaves.forEach((sw, sIdx) => {
+            sw.radius += sw.expandSpeed;
+            if(sw.radius >= sw.maxRadius) { shockwaves.splice(sIdx, 1); return; }
 
-        for (let i = enemies.length - 1; i >= 0; i--) {
-            let e = enemies[i];
-            
+            ctx.strokeStyle = sw.color; ctx.lineWidth = 4; ctx.globalAlpha = 1 - (sw.radius/sw.maxRadius);
+            ctx.beginPath(); ctx.arc(sw.x-camera.x, sw.y-camera.y, sw.radius, 0, Math.PI*2); ctx.stroke(); ctx.globalAlpha = 1.0;
+
+            enemies.forEach(e => {
+                if (getDist(sw.x, sw.y, e.x, e.y) < sw.radius + e.radius && getDist(sw.x, sw.y, e.x, e.y) > sw.radius - 20) {
+                    e.hp -= sw.dmg * 0.05;
+                }
+            });
+        });
+
+        enemies.forEach((e, eIdx) => {
             if (e.hp <= 0) {
-                createParticles(e.x, e.y, '#fff', e.isBoss ? 40 : (e.isLarge ? 15 : 8), 5);
-                currentExp += e.isBoss ? 300 : e.expReward;
+                createParticles(e.x, e.y, e.color, 12, 5);
+                currentExp += e.isBoss ? 500 : 25;
+                enemies.splice(eIdx, 1);
                 
-                if (e.isBoss) { 
-                    bossActive = false; bossObj = null; bossTimerFrames = 60 * 60; document.getElementById('boss-ui').classList.add('hidden'); enemies.splice(i, 1);
-                    triggerBossReward(); continue; 
+                if (e.isBoss) {
+                    bossActive = false; bossTimerFrames = 60 * 45;
+                    enemyProjectiles = []; 
+                    document.getElementById('boss-ui').classList.add('hidden');
+                    triggerBossReward();
+                    return; 
                 }
-                enemies.splice(i, 1); checkLevelUp(); continue;
+                checkLevelUp();
+                return;
             }
 
-            let isPulled = false; let isFrozen = isTimeStoppedGlobal; // 크로노 궁극기 정지 동기화
-            
-            // 시간정지 궁극기 지속 데미지 도트 처리
-            if (isTimeStoppedGlobal) {
-                e.hp -= (2.2 + player.bonusAtk * 0.3);
-                if (Math.random() < 0.05) createParticles(e.x, e.y, '#00e6ff', 1, 1);
-            }
+            if (!isTimeStopped) {
+                let inWarp = activeBlackholes.some(bh => bh.type === 'chrono_warp' && getDist(bh.x, bh.y, e.x, e.y) < bh.radius);
+                let speedMod = inWarp ? 0.3 : 1.0;
+                let angle = Math.atan2(player.y - e.y, player.x - e.x);
+                
+                e.x += Math.cos(angle) * e.speed * speedMod;
+                e.y += Math.sin(angle) * e.speed * speedMod;
 
-            for(let bh of activeBlackholes) { 
-                if (getDist(bh.x, bh.y, e.x, e.y) < bh.radius) { if (bh.type === 'timestop') isFrozen = true; else isPulled = true; } 
-            }
-            
-            if (!isPulled && !isTimeStoppedGlobal) {
-                let currentSpeed = isFrozen ? (e.isBoss ? e.speed * 0.35 : e.speed * 0.15) : e.speed;
-                let bossStateTimerInc = isFrozen ? 0.3 : 1.0; 
-
-                if (!e.isBoss) {
-                    let angle = Math.atan2(player.y - e.y, player.x - e.x); e.x += Math.cos(angle) * currentSpeed; e.y += Math.sin(angle) * currentSpeed;
-                } else {
-                    e.stateTimer += bossStateTimerInc;
-                    let angleToPlayer = Math.atan2(player.y - e.y, player.x - e.x); let distToPlayer = getDist(player.x, player.y, e.x, e.y);
-
-                    if (e.bossType === 'shooter') {
-                        e.x += Math.cos(angleToPlayer) * currentSpeed; e.y += Math.sin(angleToPlayer) * currentSpeed;
-                        if (e.stateTimer >= 90) { 
-                            e.stateTimer = 0;
-                            for(let k=0; k<8; k++) { enemyProjectiles.push({ x: e.x, y: e.y, vx: Math.cos((Math.PI/4)*k) * 4.5, vy: Math.sin((Math.PI/4)*k) * 4.5, radius: 8 }); }
+                if (e.isBoss) {
+                    e.skillTimer = (e.skillTimer || 0) + 1;
+                    
+                    // 👑 버서커 퀸에러 특수 패턴 및 폭주 상태 체크
+                    if (e.name === '버서커 퀸에러') {
+                        let isEnraged = e.hp < (e.maxHp * 0.5);
+                        e.color = isEnraged ? '#ff0033' : '#ff00bb';
+                        let rate = isEnraged ? 90 : 140; 
+                        
+                        if (e.skillTimer % rate === 0) {
+                            let bulletsCount = isEnraged ? 16 : 10;
+                            let spiralOffset = (spawnTimer * 0.05);
+                            for (let i = 0; i < bulletsCount; i++) {
+                                let ang = (i * Math.PI * 2 / bulletsCount) + spiralOffset;
+                                enemyProjectiles.push({
+                                    x: e.x, y: e.y,
+                                    vx: Math.cos(ang) * (isEnraged ? 5.5 : 4.0), 
+                                    vy: Math.sin(ang) * (isEnraged ? 5.5 : 4.0),
+                                    radius: isEnraged ? 9 : 7, color: isEnraged ? '#ff3300' : '#ff00ff', dmg: isEnraged ? 20 : 15
+                                });
+                            }
+                            startShake(10, isEnraged ? 8 : 4);
                         }
-                    } 
-                    else if (e.bossType === 'dasher') {
-                        let isEnraged = e.hp <= e.maxHp * 0.5; let trackTime = isEnraged ? 20 : 80; let dashDuration = 30; let postDashDelay = isEnraged ? 5 : 30;     
-                        if (isEnraged) { e.color = '#ff1100'; }
-
-                        if (e.stateTimer < trackTime) {
-                            let baseSpd = isEnraged ? e.speed * 1.6 : e.speed; e.x += Math.cos(angleToPlayer) * (isFrozen ? baseSpd * 0.35 : baseSpd); e.y += Math.sin(angleToPlayer) * (isFrozen ? baseSpd * 0.35 : baseSpd);
-                        } else if (e.stateTimer === trackTime) {
-                            e.dashAngle = angleToPlayer; 
-                        } else if (e.stateTimer < trackTime + dashDuration) {
-                            let finalDashSpd = e.speed * (isEnraged ? 6.5 : 4.5);
-                            e.x += Math.cos(e.dashAngle) * (isFrozen ? finalDashSpd * 0.4 : finalDashSpd); e.y += Math.sin(e.dashAngle) * (isFrozen ? finalDashSpd * 0.4 : finalDashSpd);
-                            createParticles(e.x, e.y, isEnraged ? '#ff1100' : '#ff8800', 2, 3);
-                        } else if (e.stateTimer >= trackTime + dashDuration && e.stateTimer < trackTime + dashDuration + 1.5) {
-                            shockwaves.push({ x: e.x, y: e.y, radius: 10, expandSpeed: isEnraged ? 12 : 8, life: 20, maxLife: 20, color: isEnraged ? '#ff0000' : '#ff4400' });
-                            createParticles(e.x, e.y, isEnraged ? '#ff0000' : '#ff8800', 40, 10);
-                            if (player.dashDuration <= 0 && getDist(player.x, player.y, e.x, e.y) < (isEnraged ? 210 : 170) + player.radius) { takeDamage(isEnraged ? 45 : 35); }
-                        } else if (e.stateTimer >= trackTime + dashDuration + postDashDelay) {
-                            e.stateTimer = 0; 
-                        }
-                    }
-                    else if (e.bossType === 'summoner') {
-                        if (e.isOverheated) {
-                            e.overheatTimer -= bossStateTimerInc; e.color = '#e066ff'; 
-                            if (e.overheatTimer <= 0) { e.isOverheated = false; e.color = '#9900ff'; }
-                        } else {
-                            if (distToPlayer < 280) { e.x -= Math.cos(angleToPlayer) * currentSpeed; e.y -= Math.sin(angleToPlayer) * currentSpeed; } 
-                            else { e.x += Math.cos(angleToPlayer) * currentSpeed * 0.5; e.y += Math.sin(angleToPlayer) * currentSpeed * 0.5; }
-                            if (e.stateTimer >= 150) {
-                                e.stateTimer = 0; e.isOverheated = true; e.overheatTimer = 90; createParticles(e.x, e.y, '#9900ff', 25, 5);
-                                for(let k=0; k<3; k++) { enemies.push({ x: e.x + (Math.random()*60-30), y: e.y + (Math.random()*60-30), maxHp: 15, hp: 15, radius: 9, speed: 1.6, color: '#9900ff', expReward: 10, isBoss: false, isLarge: false }); }
+                    } else {
+                        // 1차 일반 보스 탄막 패턴
+                        if (e.skillTimer >= 170) { 
+                            e.skillTimer = 0;
+                            let baseAngle = Math.atan2(player.y - e.y, player.x - e.x);
+                            for (let i = 0; i < 8; i++) { 
+                                let ang = baseAngle + (i * Math.PI * 2 / 8);
+                                enemyProjectiles.push({
+                                    x: e.x, y: e.y,
+                                    vx: Math.cos(ang) * 4.5, vy: Math.sin(ang) * 4.5,
+                                    radius: 7, color: '#cc00ff', dmg: 15
+                                });
                             }
                         }
                     }
-                    if (uiFrameCounter % 10 === 0) { document.getElementById('boss-hp-fill').style.width = ((e.hp / e.maxHp) * 100) + "%"; }
                 }
             }
 
-            e.x = Math.max(e.radius, Math.min(WORLD_WIDTH - e.radius, e.x));
-            e.y = Math.max(e.radius, Math.min(WORLD_HEIGHT - e.radius, e.y));
+            ctx.beginPath(); ctx.arc(e.x-camera.x, e.y-camera.y, e.radius, 0, Math.PI*2);
+            ctx.fillStyle = e.color; ctx.fill();
 
-            if (inCamera(e.x, e.y, e.radius + 30)) {
-                ctx.beginPath(); ctx.arc(e.x - camera.x, e.y - camera.y, e.radius, 0, Math.PI * 2); ctx.fillStyle = e.color; ctx.fill();
-                if (e.isBoss || e.isLarge) { ctx.strokeStyle = e.isBoss ? '#fff' : '#ffaaaa'; ctx.lineWidth = 2; ctx.stroke(); }
-                if (!e.isBoss && e.hp < e.maxHp) {
-                    ctx.fillStyle = '#ff3333'; ctx.fillRect(e.x - e.radius - camera.x, e.y - e.radius - 7 - camera.y, e.radius * 2, 3);
-                    ctx.fillStyle = '#00ffcc'; ctx.fillRect(e.x - e.radius - camera.x, e.y - e.radius - 7 - camera.y, (e.radius * 2) * (e.hp / e.maxHp), 3);
+            if (!e.isBoss) {
+                let barW = e.radius * 2;
+                let barX = e.x - camera.x - e.radius;
+                let barY = e.y - camera.y - e.radius - 7;
+                ctx.fillStyle = 'rgba(30, 30, 40, 0.7)'; ctx.fillRect(barX, barY, barW, 4);
+                ctx.fillStyle = '#ff3366'; ctx.fillRect(barX, barY, (e.hp / e.maxHp) * barW, 4);
+            }
+
+            if (getDist(player.x, player.y, e.x, e.y) < player.radius + e.radius && player.damageCooldown <= 0 && player.dashDuration <= 0) {
+                if (player.hasBossShield && player.shieldCooldown <= 0) {
+                    player.shieldCooldown = 900; player.damageCooldown = 30;
+                    createParticles(player.x, player.y, '#00ccff', 15, 6); return;
                 }
-            }
 
-            if (player.dashDuration <= 0 && getDist(player.x, player.y, e.x, e.y) < player.radius + e.radius) {
-                let damage = e.isBoss ? (e.bossType === 'dasher' && e.hp <= e.maxHp * 0.5 ? 40 : 25) : (e.isLarge ? 18 : 12); takeDamage(damage); 
+                let finalDmg = e.isBoss ? 25 : 12;
+                if (myClass === 'miner' && player.ultDuration > 0 && player.ultShield > 0) {
+                    player.ultShield -= finalDmg; if(player.ultShield < 0) player.ultShield = 0;
+                } else {
+                    player.hp -= finalDmg;
+                }
+                player.damageCooldown = 45;
+                startShake(15, 10);
+                if (player.hp <= 0) triggerGameOver();
             }
+        });
+
+        particles.forEach((p, pIdx) => {
+            p.x += p.vx; p.y += p.vy; p.life--; if(p.life <= 0) particles.splice(pIdx, 1);
+            ctx.fillStyle = p.color; ctx.fillRect(p.x-camera.x, p.y-camera.y, 3, 3);
+        });
+
+        if (bossActive && bossObj) {
+            document.getElementById('boss-hp-fill').style.width = (bossObj.hp / bossObj.maxHp * 100) + '%';
         }
 
+        if (myClass === 'glitch' && player.ultDuration > 0) {
+            for(let j=1; j<=2; j++) {
+                ctx.globalAlpha = 0.25; ctx.beginPath();
+                ctx.arc(player.x - camera.x + Math.sin(spawnTimer/4)*25*j, player.y - camera.y + Math.cos(spawnTimer/4)*25*j, player.radius, 0, Math.PI*2);
+                ctx.fillStyle = '#00ffcc'; ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        ctx.beginPath(); ctx.arc(player.x-camera.x, player.y-camera.y, player.radius, 0, Math.PI*2);
+        ctx.fillStyle = (player.damageCooldown > 0 && Math.floor(spawnTimer/4)%2===0) ? '#ff3333' : '#00ffcc';
+        ctx.fill();
+
+        if (myClass === 'miner' && player.ultDuration > 0 && player.ultShield > 0) {
+            ctx.strokeStyle = 'rgba(255, 204, 0, 0.6)'; ctx.lineWidth = 4; ctx.beginPath();
+            ctx.arc(player.x-camera.x, player.y-camera.y, player.radius + 6, 0, Math.PI*2); ctx.stroke();
+        }
+
+        if (player.hasBossShield && player.shieldCooldown <= 0) {
+            ctx.strokeStyle = 'rgba(0, 204, 255, 0.4)'; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.arc(player.x-camera.x, player.y-camera.y, player.radius + 4, 0, Math.PI*2); ctx.stroke();
+        }
+
+        ctx.restore();
+        updateUI();
         requestAnimationFrame(gameLoop);
     }
+
+    function createParticles(x, y, color, count, speed) {
+        for(let i=0; i<count; i++) {
+            let a = Math.random()*Math.PI*2; let s = Math.random()*speed;
+            particles.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life: 15+Math.random()*15, color });
+        }
+    }
+
+    function getAvailableUpgrades() {
+        let pool = [
+            { id: 'atk', title: '[ATK UP]', desc: '공격 대미지 +5', color: '#ff4444' },
+            { id: 'atkSpd', title: '[SPD UP]', desc: '공격 속도 증가', color: '#ffff00' },
+            { id: 'maxHp', title: '[HP UP]', desc: '최대 체력 +30', color: '#00ccff' },
+            { id: 'regen', title: '[REPAIR]', desc: '초당 회복력 강화', color: '#33ff33' }
+        ];
+        if (!player.hasDash) {
+            pool.push({ id: 'skill_dash', title: '[DASH]', desc: 'Space: 무적 돌진 스킬 획득', color: '#ff8800' });
+        }
+        if (myClass === 'glitch' && !player.hasShotgun) {
+            pool.push({ id: 'skill_shotgun', title: '[SHIFT: SHOTGUN]', desc: 'Shift: 전방 산탄 발사 스킬 개방', color: '#ff5500' });
+        }
+        if (myClass === 'void' && !player.hasBlackhole) {
+            pool.push({ id: 'skill_blackhole', title: '[SHIFT: VOID]', desc: 'Shift: 적을 당기는 블랙홀 생성', color: '#9900ff' });
+        }
+        if (myClass === 'chrono' && !player.hasTimestop) {
+            pool.push({ id: 'skill_timestop', title: '[SHIFT: WARP]', desc: 'Shift: 차원 왜곡 영역 생성 (감속)', color: '#00e6ff' });
+        }
+        if (myClass === 'miner' && !player.hasNuke) {
+            pool.push({ id: 'skill_nuke', title: '[SHIFT: PLASMA]', desc: 'Shift: 광역 폭발형 에너지탄 발사', color: '#ff3300' });
+        }
+        if (level >= 10 && !player.hasUltimate) {
+            pool.push({ id: 'skill_ult', title: '[🔥 ULTIMATE]', desc: 'R: 클래스 전용 궁극기 시스템 가동', color: '#ff007f' });
+        }
+        return pool.sort(() => 0.5 - Math.random()).slice(0, 3);
+    }
+
+    function checkLevelUp() {
+        if (currentExp >= nextLevelExp) {
+            currentExp -= nextLevelExp; level++; nextLevelExp = Math.floor(nextLevelExp * 1.35);
+            gameState = 'levelup';
+            currentUpgrades = getAvailableUpgrades();
+            renderUpgrades();
+            document.getElementById('screen-levelup').classList.remove('hidden');
+        }
+    }
+
+    function renderUpgrades() {
+        const container = document.getElementById('levelup-cards'); container.innerHTML = '';
+        currentUpgrades.forEach((u, i) => {
+            container.innerHTML += `<div class="reward-card ${i===0?'selected':''}" onclick="chooseUpgrade('${u.id}')"><h3 style="color:${u.color}">${u.title}</h3><p>${u.desc}</p></div>`;
+        });
+        menuSelectionIndex = 0;
+    }
+
+    function chooseUpgrade(id) {
+        if (id === 'atk') player.bonusAtk += 5;
+        if (id === 'atkSpd') player.atkSpd = Math.max(6, player.atkSpd - 2);
+        if (id === 'maxHp') { player.maxHp += 30; player.hp += 30; }
+        if (id === 'regen') player.regenAmount += 0.15;
+        if (id === 'skill_dash') player.hasDash = true;
+        if (id === 'skill_shotgun') player.hasShotgun = true;
+        if (id === 'skill_blackhole') player.hasBlackhole = true;
+        if (id === 'skill_timestop') player.hasTimestop = true;
+        if (id === 'skill_nuke') player.hasNuke = true;
+        if (id === 'skill_ult') player.hasUltimate = true;
+        
+        document.getElementById('screen-levelup').classList.add('hidden');
+        
+        gameState = 'play';
+        if (currentExp >= nextLevelExp) {
+            checkLevelUp();
+        } else {
+            gameLoop();
+        }
+    }
+
+    function spawnBoss() {
+        bossActive = true; bossCount++;
+        enemies = []; 
+        
+        let bossName = bossCount >= 2 ? '버서커 퀸에러' : '디멘션 크래셔';
+        let bossHp = bossCount >= 2 ? 1400 : 500;
+        let bossSize = bossCount >= 2 ? 42 : 36;
+        let bossColor = bossCount >= 2 ? '#ff00bb' : '#ff0055';
+
+        document.getElementById('boss-ui-name').innerText = `⚠️ BOSS DETECTED: ${bossName} ⚠️`;
+
+        bossObj = { 
+            x: player.x + 300, y: player.y - 300, 
+            hp: bossHp, maxHp: bossHp, 
+            radius: bossSize, color: bossColor, speed: bossCount >= 2 ? 1.5 : 1.3, isBoss: true,
+            name: bossName, skillTimer: 0 
+        };
+        enemies.push(bossObj);
+        document.getElementById('boss-ui').classList.remove('hidden');
+    }
+
+    function triggerBossReward() {
+        gameState = 'bossReward';
+        currentUpgrades = [
+            { id: 'boss_drone', title: '🛰️ [BIT DRONE]', desc: '본체를 회전하며 유도 탄환을 사격하는 드론 추가', color: '#ff0055' },
+            { id: 'boss_shield', title: '🛡️ [VOID ARMOR]', desc: '15초마다 가해지는 모든 타격을 1회 무효화', color: '#00ccff' },
+            { id: 'boss_nova', title: '💥 [CORE NOVA]', desc: '8초마다 주변 차원을 붕괴시켜 광역 충격파 방출', color: '#ff8800' }
+        ];
+        const container = document.getElementById('boss-reward-cards'); container.innerHTML = '';
+        currentUpgrades.forEach((u, i) => {
+            container.innerHTML += `<div class="reward-card ${i===0?'selected':''}" onclick="chooseBossUpgrade('${u.id}')"><h3 style="color:${u.color}">${u.title}</h3><p>${u.desc}</p></div>`;
+        });
+        menuSelectionIndex = 0;
+        document.getElementById('screen-boss-reward').classList.remove('hidden');
+    }
+
+    function chooseBossUpgrade(id) {
+        if (id === 'boss_drone') player.bossDrones++;
+        if (id === 'boss_shield') player.hasBossShield = true;
+        if (id === 'boss_nova') { player.hasBossNova = true; player.novaTimer = 0; }
+
+        document.getElementById('screen-boss-reward').classList.add('hidden');
+        
+        gameState = 'play';
+        if (currentExp >= nextLevelExp) {
+            checkLevelUp(); 
+        } else {
+            gameLoop();
+        }
+    }
+
+    function getDist(x1, y1, x2, y2) { return Math.hypot(x2-x1, y2-y1); }
 </script>
 </body>
 </html>
