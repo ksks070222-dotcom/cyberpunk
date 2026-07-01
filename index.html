@@ -45,8 +45,8 @@
     </div>
 
     <div id="screen-start" class="screen">
-        <h1>NEO-DESTROYER <span style="font-size: 12px; color: #ff007f; border: 1px solid #ff007f; padding: 2px 6px; border-radius: 4px;">v2.1</span></h1>
-        <h2>보이드 마스터 장판 사거리 제한 패치</h2>
+        <h1>NEO-DESTROYER <span style="font-size: 12px; color: #ff007f; border: 1px solid #ff007f; padding: 2px 6px; border-radius: 4px;">v2.2</span></h1>
+        <h2>보이드 마스터 공속 밸런스 패치</h2>
         <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">[A] [D] 이동 후 [ENTER] 선택</p>
         <div class="card-container">
             <div class="card selected" onclick="selectClass('glitch')">
@@ -155,7 +155,7 @@
             className === 'glitch' ? '[SHIFT: SHOTGUN]' : className === 'void' ? '[SHIFT: VOID]' : className === 'chrono' ? '[SHIFT: WARP]' : '[SHIFT: NUKE]';
 
         if (className === 'glitch') { player.maxHp = 80; player.atkSpd = 20; }
-        else if (className === 'void') { player.maxHp = 120; player.atkSpd = 28; }
+        else if (className === 'void') { player.maxHp = 120; player.atkSpd = 42; } // 🔮 공속 너프 패치 적용 (기존 28 -> 42로 변경하여 연사력 하향)
         else if (className === 'chrono') { player.maxHp = 100; player.atkSpd = 24; }
         else if (className === 'miner') { player.maxHp = 140; player.atkSpd = 40; }
         
@@ -278,15 +278,13 @@
             });
         }
 
-        // 🎯 타겟팅 로직 (보이드 마스터 화면 검사 필터 장착)
         let target = null, minDist = 9999;
         enemies.forEach(e => {
             let d = getDist(player.x, player.y, e.x, e.y);
             
-            // 🔮 보이드 마스터 특화: 화면 안에 렌더링된 적들만 정밀 타겟팅 하도록 격리
             if (myClass === 'void') {
                 if (e.x < camera.x || e.x > camera.x + canvas.width || e.y < camera.y || e.y > camera.y + canvas.height) {
-                    return; // 화면 밖의 유닛은 계산에서 배제
+                    return; 
                 }
             }
 
